@@ -5,9 +5,9 @@ import chainer.functions as F
 from chainerrl.functions.lower_triangular_matrix import lower_triangular_matrix
 
 
-class NafAFunction(chainer.Chain):
-    def __init__(self, state_dim, action_num, *, hidden_size=200):
-        super(NafAFunction, self).__init__()
+class NafLMatrix(chainer.Chain):
+    def __init__(self, state_dim, action_num, hidden_size):
+        super(NafLMatrix, self).__init__()
         L_lower_size = action_num * (action_num + 1) // 2
         L_diag = action_num
         L_rest = L_lower_size - action_num
@@ -23,24 +23,7 @@ class NafAFunction(chainer.Chain):
             self._linear_L3_rest = L.Linear(
                 in_size=hidden_size, out_size=L_rest)
 
-            self._linear_mu1 = L.Linear(
-                in_size=state_dim, out_size=hidden_size, nobias=True)
-            self._mu_bn1 = L.BatchNormalization(axis=0)
-            self._linear_mu2 = L.Linear(
-                in_size=hidden_size, out_size=hidden_size, nobias=True)
-            self._mu_bn2 = L.BatchNormalization(axis=0)
-            self._linear_mu3 = L.Linear(
-                in_size=hidden_size, out_size=action_num)
-
-    def __call__(self, s, a):
-        L_matrix = self._compute_L_matrix(s)
-        mu = self._compute_mu(s)
-
-        P_matrix = F.matmul(L_matrix, L_matrix, transb=True)
-        a_minus_mu = (a - mu)[:, :, None]
-        return -0.5 * F.matmul(a_minus_mu, F.matmul(P_matrix, a_minus_mu), transa=True)[:, 0]
-
-    def _compute_L_matrix(self, s):
+    def __call__(self, s):
         h = self._linear_L1(s)
         h = self._L_bn1(h)
         h = F.relu(h)
@@ -51,14 +34,48 @@ class NafAFunction(chainer.Chain):
         rest = self._linear_L3_rest(h)
         return lower_triangular_matrix(diag, rest)
 
-    def _compute_mu(self, s):
+
+class NafMu(chainer.Chain):
+    def __init__(self, state_dim, action_num, hidden_size):
+        super(NafMu, self).__init__()
+        with self.init_scope():
+            self._linear_mu1 = L.Linear(
+                in_size=state_dim, out_size=hidden_size, nobias=True)
+            self._mu_bn1 = L.BatchNormalization(axis=0)
+            self._linear_mu2 = L.Linear(
+                in_size=hidden_size, out_size=hidden_size, nobias=True)
+            self._mu_bn2 = L.BatchNormalization(axis=0)
+            self._linear_mu3 = L.Linear(
+                in_size=hidden_size, out_size=action_num)
+
+    def __call__(self, s):
         h = self._linear_mu1(s)
-        h = self._L_bn1(h)
+        h = self._mu_bn1(h)
         h = F.relu(h)
         h = self._linear_mu2(h)
-        h = self._L_bn2(h)
+        h = self._mu_bn2(h)
         h = F.relu(h)
         return self._linear_mu3(h)
+
+
+class NafAFunction(chainer.Chain):
+    def __init__(self, state_dim, action_num, *, hidden_size=200):
+        super(NafAFunction, self).__init__()
+        with self.init_scope():
+            self._L = NafLMatrix(state_dim=state_dim,
+                                 action_num=action_num,
+                                 hidden_size=hidden_size)
+            self._mu = NafMu(state_dim=state_dim,
+                             action_num=action_num,
+                             hidden_size=hidden_size)
+
+    def __call__(self, s, a):
+        L_matrix = self._L(s)
+        mu = self._mu(s)
+
+        P_matrix = F.matmul(L_matrix, L_matrix, transb=True)
+        a_minus_mu = (a - mu)[:, :, None]
+        return -0.5 * F.matmul(a_minus_mu, F.matmul(P_matrix, a_minus_mu), transa=True)[:, 0]
 
 
 if __name__ == "__main__":
@@ -106,7 +123,7 @@ if __name__ == "__main__":
     advantage_function = NafAFunction(state_num, action_num)
 
     state = np.ones(shape=(batch_size, state_num), dtype=np.float32)
-    L_matrix = advantage_function._compute_L_matrix(state)
+    L_matrix = advantage_function._L(state)
 
     assert_is_lower_triangular_matrix(L_matrix)
     assert L_matrix.shape == (batch_size, action_num, action_num)
