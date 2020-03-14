@@ -6,6 +6,7 @@ import collections
 import os
 
 import numpy as np
+import chainer
 
 from researchutils import files
 from researchutils.chainer import serializers
@@ -52,6 +53,8 @@ def run_training_loop(env, naf, args):
         with open(result_file, "w") as f:
             f.write('timestep\tmean\tmedian\n')
 
+    chainer.config.train = False
+    chainer.config.enable_backprop = False
     for timestep in range(args.total_timesteps):
         s_current, a, r, s_next, done = naf.act_with_policy(env, s_current)
         non_terminal = np.float32(0 if done else 1)
@@ -62,7 +65,11 @@ def run_training_loop(env, naf, args):
         s_current = s_next
 
         if len(replay_buffer) > args.batch_size * 10:
+            chainer.config.train = True
+            chainer.config.enable_backprop = True
             naf.train(replay_buffer, episode_steps, args.gamma, args.tau)
+            chainer.config.train = False
+            chainer.config.enable_backprop = False
 
         if done:
             if args.evaluation_interval < timestep - previous_evaluation:
@@ -110,6 +117,8 @@ def start_test_run(args):
               device=args.gpu)
     load_params(naf, args)
 
+    chainer.config.train = False
+    chainer.config.enable_backprop = False
     rewards = naf.evaluate_policy(env, render=True, save_video=args.save_video)
     print('rewards: ', rewards)
     mean = np.mean(rewards)
@@ -142,7 +151,7 @@ def main():
 
     # Training parameters
     parser.add_argument('--total-timesteps', type=float, default=1000000)
-    parser.add_argument('--learning-rate', type=float, default=1.0*1e-3)
+    parser.add_argument('--learning-rate', type=float, default=1.0 * 1e-3)
     parser.add_argument('--gamma', type=float, default=0.99)
     parser.add_argument('--tau', type=float, default=0.005)
     parser.add_argument('--batch-size', type=int, default=100)

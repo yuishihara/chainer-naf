@@ -74,9 +74,6 @@ class NAF(object):
             render = False
 
         rewards = []
-        training_setting = chainer.config.train
-        if training_setting:
-            chainer.config.train = False
         for _ in range(10):
             s = env.reset()
             episode_reward = 0
@@ -97,7 +94,6 @@ class NAF(object):
                 if done:
                     rewards.append(episode_reward)
                     break
-        chainer.config.train = training_setting
         return rewards
 
     def train(self, replay_buffer, iterations, gamma, tau):
