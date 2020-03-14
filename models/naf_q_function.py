@@ -2,8 +2,8 @@ import chainer
 import chainer.links as L
 import chainer.functions as F
 
-from naf_a_function import NafAFunction
-from naf_v_function import NafVFunction
+from .naf_a_function import NafAFunction
+from .naf_v_function import NafVFunction
 
 
 class NafQFunction(chainer.Chain):
@@ -15,9 +15,16 @@ class NafQFunction(chainer.Chain):
             self._v = NafVFunction(state_dim=state_dim)
 
     def __call__(self, s, a):
-        advantage = self._a(s, a)
-        value = self._v(s)
-        return advantage + value
+        return self.advantage(s, a) + self.value(s)
+
+    def advantage(self, s, a):
+        return self._a(s, a)
+
+    def value(self, s):
+        return self._v(s)
+
+    def pi(self, s):
+        return self._a._mu(s)
 
     def training_params(self):
         return (self._v, self._a._L, self._a._mu)
