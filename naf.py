@@ -18,7 +18,7 @@ import numpy as np
 
 
 class NAF(object):
-    def __init__(self, state_dim, action_num, lr=1.0*1e-3, batch_size=100, device=-1):
+    def __init__(self, state_dim, action_num, lr=1.0 * 1e-3, batch_size=100, device=-1):
         super(NAF, self).__init__()
         self._q_optimizer = optimizers.Adam(alpha=lr)
 
