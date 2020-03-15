@@ -34,10 +34,8 @@ class NAF(object):
 
         self._q_optimizer.setup(self._q)
 
-        xp = np if device < 0 else cp
-
-        mean = xp.zeros(shape=(action_num), dtype=xp.float32)
-        sigma = xp.ones(shape=(action_num), dtype=xp.float32)
+        mean = np.zeros(shape=(action_num), dtype=np.float32)
+        sigma = np.ones(shape=(action_num), dtype=np.float32)
         self._exploration_noise = Normal(loc=mean, scale=sigma * 0.1)
 
         self._device = device

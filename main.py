@@ -67,7 +67,7 @@ def run_training_loop(env, naf, args):
         if len(replay_buffer) > args.batch_size * 10:
             chainer.config.train = True
             chainer.config.enable_backprop = True
-            naf.train(replay_buffer, episode_steps, args.gamma, args.tau)
+            naf.train(replay_buffer, args.iterations, args.gamma, args.tau)
             chainer.config.train = False
             chainer.config.enable_backprop = False
 
@@ -157,6 +157,7 @@ def main():
     parser.add_argument('--batch-size', type=int, default=100)
     parser.add_argument('--start-timesteps', type=int, default=1000)
     parser.add_argument('--evaluation-interval', type=float, default=5000)
+    parser.add_argument('--iterations', type=int, default=5)
 
     args = parser.parse_args()
 
