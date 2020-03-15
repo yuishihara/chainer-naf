@@ -43,7 +43,6 @@ def run_training_loop(env, naf, args):
     replay_buffer = []
     s_current = env.reset()
 
-    episode_steps = 0
     previous_evaluation = 0
 
     outdir = files.prepare_output_dir(base_dir=args.outdir, args=args)
@@ -55,13 +54,13 @@ def run_training_loop(env, naf, args):
 
     chainer.config.train = False
     chainer.config.enable_backprop = False
+    experienced_episodes = 0
     for timestep in range(args.total_timesteps):
         s_current, a, r, s_next, done = naf.act_with_policy(env, s_current)
         non_terminal = np.float32(0 if done else 1)
 
         replay_buffer.append((s_current, a, r, s_next, non_terminal))
 
-        episode_steps += 1
         s_current = s_next
 
         if len(replay_buffer) > args.batch_size * 10:
@@ -72,6 +71,8 @@ def run_training_loop(env, naf, args):
             chainer.config.enable_backprop = False
 
         if done:
+            experienced_episodes += 1
+            print('experienced episodes: ', experienced_episodes)
             if args.evaluation_interval < timestep - previous_evaluation:
                 print('evaluating policy at timestep: ', timestep)
                 rewards = naf.evaluate_policy(env)
@@ -88,7 +89,6 @@ def run_training_loop(env, naf, args):
                 save_params(naf, timestep, outdir, args)
                 previous_evaluation = timestep
 
-            episode_steps = 0
             s_current = env.reset()
 
 
@@ -151,9 +151,9 @@ def main():
 
     # Training parameters
     parser.add_argument('--total-timesteps', type=float, default=1000000)
-    parser.add_argument('--learning-rate', type=float, default=1.0 * 1e-3)
+    parser.add_argument('--learning-rate', type=float, default=1.0 * 1e-4)
     parser.add_argument('--gamma', type=float, default=0.99)
-    parser.add_argument('--tau', type=float, default=0.005)
+    parser.add_argument('--tau', type=float, default=0.001)
     parser.add_argument('--batch-size', type=int, default=100)
     parser.add_argument('--start-timesteps', type=int, default=1000)
     parser.add_argument('--evaluation-interval', type=float, default=5000)
