@@ -9,10 +9,10 @@ class NafVFunction(chainer.Chain):
         with self.init_scope():
             self._linear1 = L.Linear(
                 in_size=state_dim, out_size=hidden_size, nobias=True)
-            self._bn1 = L.BatchNormalization(axis=0)
+            self._bn1 = L.BatchNormalization(size=[hidden_size], axis=0)
             self._linear2 = L.Linear(
                 in_size=hidden_size, out_size=hidden_size, nobias=True)
-            self._bn2 = L.BatchNormalization(axis=0)
+            self._bn2 = L.BatchNormalization(size=[hidden_size], axis=0)
             self._linear3 = L.Linear(in_size=hidden_size, out_size=1)
 
     def __call__(self, s):

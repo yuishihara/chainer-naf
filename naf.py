@@ -10,6 +10,7 @@ from collections import deque
 
 from models.naf_q_function import NafQFunction
 
+
 import gym
 
 import cupy as cp
@@ -96,6 +97,12 @@ class NAF(object):
                     break
         return rewards
 
+    def target_q_value(self, state):
+        chainer.config.train = False
+        q_value = self._target_q.value(state)
+        chainer.config.train = True
+        return q_value
+
     def train(self, replay_buffer, iterations, gamma, tau):
         if not self._initialized:
             self._initialize_target_networks()
@@ -108,7 +115,7 @@ class NAF(object):
             r = F.reshape(r, shape=(*r.shape, 1))
             non_terminal = F.reshape(
                 non_terminal, shape=(*non_terminal.shape, 1))
-            value = self._target_q.value(s_next) * non_terminal
+            value = self.target_q_value(s_next) * non_terminal
             y = value * gamma + r
             y.unchain()
 
@@ -135,3 +142,8 @@ class NAF(object):
 
     def _prepare_iterator(self, buffer):
         return iterators.SerialIterator(buffer, self._batch_size)
+
+
+if __name__ == "__main__":
+    naf = NAF(state_dim=3, action_num=3)
+    naf._initialize_target_networks()

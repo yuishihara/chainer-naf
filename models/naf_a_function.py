@@ -14,10 +14,10 @@ class NafLMatrix(chainer.Chain):
         with self.init_scope():
             self._linear_L1 = L.Linear(
                 in_size=state_dim, out_size=hidden_size, nobias=True)
-            self._L_bn1 = L.BatchNormalization(axis=0)
+            self._L_bn1 = L.BatchNormalization(size=[hidden_size], axis=0)
             self._linear_L2 = L.Linear(
                 in_size=hidden_size, out_size=hidden_size, nobias=True)
-            self._L_bn2 = L.BatchNormalization(axis=0)
+            self._L_bn2 = L.BatchNormalization(size=[hidden_size], axis=0)
             self._linear_L3_diag = L.Linear(
                 in_size=hidden_size, out_size=L_diag)
             self._linear_L3_rest = L.Linear(
@@ -41,10 +41,10 @@ class NafMu(chainer.Chain):
         with self.init_scope():
             self._linear_mu1 = L.Linear(
                 in_size=state_dim, out_size=hidden_size, nobias=True)
-            self._mu_bn1 = L.BatchNormalization(axis=0)
+            self._mu_bn1 = L.BatchNormalization(size=[hidden_size], axis=0)
             self._linear_mu2 = L.Linear(
                 in_size=hidden_size, out_size=hidden_size, nobias=True)
-            self._mu_bn2 = L.BatchNormalization(axis=0)
+            self._mu_bn2 = L.BatchNormalization(size=[hidden_size], axis=0)
             self._linear_mu3 = L.Linear(
                 in_size=hidden_size, out_size=action_num)
 
