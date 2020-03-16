@@ -40,7 +40,7 @@ def save_params(naf, timestep, outdir, args):
 
 
 def run_training_loop(env, naf, args):
-    replay_buffer = []
+    replay_buffer = collections.deque(maxlen=args.max_buffer_size)
     s_current = env.reset()
 
     previous_evaluation = 0
@@ -158,6 +158,7 @@ def main():
     parser.add_argument('--start-timesteps', type=int, default=1000)
     parser.add_argument('--evaluation-interval', type=float, default=5000)
     parser.add_argument('--iterations', type=int, default=5)
+    parser.add_argument('--max-buffer-size', type=int, default=None)
 
     args = parser.parse_args()
 
