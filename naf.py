@@ -9,6 +9,7 @@ from chainer.distributions import Normal
 from collections import deque
 
 from models.naf_q_function import NafQFunction
+from models.naf_shared_q_function import NafSharedQFunction
 
 
 import gym
@@ -18,15 +19,20 @@ import numpy as np
 
 
 class NAF(object):
-    def __init__(self, state_dim, action_num, lr=1.0 * 1e-3, batch_size=100, device=-1):
+    def __init__(self, state_dim, action_num, lr=1.0 * 1e-3, batch_size=100, device=-1, shared_model=False):
         super(NAF, self).__init__()
         self._q_optimizer = optimizers.Adam(alpha=lr)
 
         self._batch_size = batch_size
-        self._q = NafQFunction(state_dim=state_dim, action_num=action_num)
 
-        self._target_q = NafQFunction(
-            state_dim=state_dim, action_num=action_num)
+        if shared_model:
+            self._q = NafSharedQFunction(state_dim=state_dim, action_num=action_num)
+            self._target_q = NafSharedQFunction(
+                state_dim=state_dim, action_num=action_num)
+        else:
+            self._q = NafQFunction(state_dim=state_dim, action_num=action_num)
+            self._target_q = NafQFunction(
+                state_dim=state_dim, action_num=action_num)
 
         if not device < 0:
             self._q.to_gpu()

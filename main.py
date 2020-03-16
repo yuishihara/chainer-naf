@@ -114,7 +114,8 @@ def start_test_run(args):
               action_num=env.action_space.shape[0],
               lr=args.learning_rate,
               batch_size=args.batch_size,
-              device=args.gpu)
+              device=args.gpu,
+              shared_model=args.parameter_shared_model)
     load_params(naf, args)
 
     chainer.config.train = False
@@ -159,6 +160,7 @@ def main():
     parser.add_argument('--evaluation-interval', type=float, default=5000)
     parser.add_argument('--iterations', type=int, default=5)
     parser.add_argument('--max-buffer-size', type=int, default=None)
+    parser.add_argument('--parameter-shared-model', action='store_true')
 
     args = parser.parse_args()
 
