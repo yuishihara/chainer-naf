@@ -79,15 +79,11 @@ class NAF(object):
             render = False
 
         rewards = []
-        min_qs = []
-        max_qs = []
         min_vs = []
         max_vs = []
         for _ in range(10):
             s = env.reset()
             episode_reward = 0
-            min_q = np.finfo(np.float32).max
-            max_q = np.finfo(np.float32).min
             min_v = np.finfo(np.float32).max
             max_v = np.finfo(np.float32).min
             while True:
@@ -110,18 +106,14 @@ class NAF(object):
                 episode_reward += r
                 q = np.squeeze(q.data, axis=0)
                 v = np.squeeze(v.data, axis=0)
-                min_q = min((min_q, q))
-                max_q = max((max_q, q))
                 min_v = min((min_v, v))
                 max_v = max((max_v, v))
                 if done:
                     rewards.append(episode_reward)
-                    min_qs.append(min_q)
-                    max_qs.append(max_q)
-                    min_vs.append(min_v)
-                    max_vs.append(max_v)
+                    min_vs.append(min_v[0])
+                    max_vs.append(max_v[0])
                     break
-        print('min_q: {}, max_q: {}, min_v: {}, max_v: {}'.format(min_q, max_q, min_v, max_v))
+        print('min_q: {}, max_q: {}, min_v: {}, max_v: {}'.format(min_qs, max_qs, min_vs, max_vs))
         return rewards
 
     def target_q_value(self, state):
