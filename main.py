@@ -99,7 +99,8 @@ def start_training(args):
               action_num=env.action_space.shape[0],
               lr=args.learning_rate,
               batch_size=args.batch_size,
-              device=args.gpu)
+              device=args.gpu,
+              shared_model=args.parameter_shared_model)
     load_params(naf, args)
 
     run_training_loop(env, naf, args)
