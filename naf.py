@@ -79,9 +79,17 @@ class NAF(object):
             render = False
 
         rewards = []
+        min_q = []
+        max_q = []
+        min_v = []
+        max_v = []
         for _ in range(10):
             s = env.reset()
             episode_reward = 0
+            min_q = np.finfo(np.float32).max
+            max_q = np.finfo(np.float32).min
+            min_v = np.finfo(np.float32).max
+            max_v = np.finfo(np.float32).min
             while True:
                 if render:
                     env.render()
@@ -91,14 +99,29 @@ class NAF(object):
                     s.to_gpu()
 
                 a = self._q.pi(s)
+                q = self._q(s, a)
+                v = self._q.value(s)
                 if not self._device < 0:
                     a.to_cpu()
+                    q.to_cpu()
+                    v.to_cpu()
                 a = np.squeeze(a.data, axis=0)
                 s, r, done, _ = env.step(a)
                 episode_reward += r
+                q = np.squeeze(q.data, axis=0)
+                v = np.squeeze(v.data, axis=0)
+                min_q = min((min_q, q))
+                max_q = max((max_q, q))
+                min_v = min((min_v, v))
+                max_v = max((max_v, v))
                 if done:
                     rewards.append(episode_reward)
+                    min_q.append(min_q)
+                    max_q.append(max_q)
+                    min_v.append(min_v)
+                    max_v.append(max_v)
                     break
+        print('min_q: {}, max_q: {}, min_v: {}, max_v: {}'.format(min_q, max_q, min_v, max_v))
         return rewards
 
     def target_q_value(self, state):
