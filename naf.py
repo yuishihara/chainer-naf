@@ -79,10 +79,10 @@ class NAF(object):
             render = False
 
         rewards = []
-        min_q = []
-        max_q = []
-        min_v = []
-        max_v = []
+        min_qs = []
+        max_qs = []
+        min_vs = []
+        max_vs = []
         for _ in range(10):
             s = env.reset()
             episode_reward = 0
@@ -116,10 +116,10 @@ class NAF(object):
                 max_v = max((max_v, v))
                 if done:
                     rewards.append(episode_reward)
-                    min_q.append(min_q)
-                    max_q.append(max_q)
-                    min_v.append(min_v)
-                    max_v.append(max_v)
+                    min_qs.append(min_q)
+                    max_qs.append(max_q)
+                    min_vs.append(min_v)
+                    max_vs.append(max_v)
                     break
         print('min_q: {}, max_q: {}, min_v: {}, max_v: {}'.format(min_q, max_q, min_v, max_v))
         return rewards
