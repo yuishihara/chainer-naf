@@ -122,8 +122,7 @@ class NAF(object):
                     min_vs.append(min_v[0])
                     max_vs.append(max_v[0])
                     break
-        print('min_q: {}, max_q: {}, min_v: {}, max_v: {}'.format(
-            min_qs, max_qs, min_vs, max_vs))
+        print('min_v: {}, max_v: {}'.format(min_vs, max_vs))
         return rewards
 
     def target_q_value(self, state):
