@@ -5,6 +5,7 @@ from chainer import iterators
 from chainer.datasets import tuple_dataset
 from chainer.dataset import concat_examples
 from chainer.distributions import Normal
+from chainer import optimizer_hooks
 
 from collections import deque
 
@@ -19,14 +20,20 @@ import numpy as np
 
 
 class NAF(object):
-    def __init__(self, state_dim, action_num, lr=1.0 * 1e-3, batch_size=100, device=-1, shared_model=False):
+    def __init__(self, state_dim, action_num,
+                 lr=1.0 * 1e-3,
+                 batch_size=100,
+                 device=-1,
+                 shared_model=False,
+                 clip_grads=False):
         super(NAF, self).__init__()
         self._q_optimizer = optimizers.Adam(alpha=lr)
 
         self._batch_size = batch_size
 
         if shared_model:
-            self._q = NafSharedQFunction(state_dim=state_dim, action_num=action_num)
+            self._q = NafSharedQFunction(
+                state_dim=state_dim, action_num=action_num)
             self._target_q = NafSharedQFunction(
                 state_dim=state_dim, action_num=action_num)
         else:
@@ -39,6 +46,8 @@ class NAF(object):
             self._target_q.to_gpu()
 
         self._q_optimizer.setup(self._q)
+        if clip_grads:
+            self._q_optimizer.add_hook(optimizer_hooks.GradientClipping(1.0))
 
         mean = np.zeros(shape=(action_num), dtype=np.float32)
         sigma = np.ones(shape=(action_num), dtype=np.float32)
@@ -113,7 +122,8 @@ class NAF(object):
                     min_vs.append(min_v[0])
                     max_vs.append(max_v[0])
                     break
-        print('min_q: {}, max_q: {}, min_v: {}, max_v: {}'.format(min_qs, max_qs, min_vs, max_vs))
+        print('min_q: {}, max_q: {}, min_v: {}, max_v: {}'.format(
+            min_qs, max_qs, min_vs, max_vs))
         return rewards
 
     def target_q_value(self, state):
