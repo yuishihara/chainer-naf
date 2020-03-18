@@ -6,17 +6,19 @@ from chainerrl.functions.lower_triangular_matrix import lower_triangular_matrix
 
 
 class NafSharedQFunction(chainer.Chain):
-    def __init__(self, state_dim, action_num, *, hidden_size=200):
+    def __init__(self, state_dim, action_num, *, hidden_size=200, use_batch_norm=True):
         super(NafSharedQFunction, self).__init__()
         L_lower_size = action_num * (action_num + 1) // 2
         L_diag = action_num
         L_rest = L_lower_size - action_num
+        self._use_batch_norm = use_batch_norm
         with self.init_scope():
+            self._shared_bn0 = L.BatchNormalization(size=[state_dim], axis=0)
             self._linear_shared1 = L.Linear(
-                in_size=state_dim, out_size=hidden_size, nobias=True)
+                in_size=state_dim, out_size=hidden_size, nobias=use_batch_norm)
             self._shared_bn1 = L.BatchNormalization(size=[hidden_size], axis=0)
             self._linear_shared2 = L.Linear(
-                in_size=hidden_size, out_size=hidden_size, nobias=True)
+                in_size=hidden_size, out_size=hidden_size, nobias=use_batch_norm)
             self._shared_bn2 = L.BatchNormalization(size=[hidden_size], axis=0)
 
             self._linear_mu = L.Linear(
@@ -64,11 +66,21 @@ class NafSharedQFunction(chainer.Chain):
         return self._linear_mu(x)
 
     def _encode(self, s):
-        h = self._linear_shared1(s)
-        h = self._shared_bn1(h)
+        if self._use_batch_norm:
+            h = self._shared_bn0(s)
+        else:
+            h = s
+        h = self._linear_shared1(h)
+        if self._use_batch_norm:
+            h = self._shared_bn1(h)
+        else:
+            pass
         h = F.relu(h)
         h = self._linear_shared2(h)
-        h = self._shared_bn2(h)
+        if self._use_batch_norm:
+            h = self._shared_bn2(h)
+        else:
+            pass
         return F.relu(h)
 
 

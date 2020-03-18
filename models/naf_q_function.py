@@ -7,12 +7,14 @@ from .naf_v_function import NafVFunction
 
 
 class NafQFunction(chainer.Chain):
-    def __init__(self, state_dim, action_num):
+    def __init__(self, state_dim, action_num, *, use_batch_norm=True):
         super(NafQFunction, self).__init__()
         with self.init_scope():
-            self._a = NafAFunction(
-                state_dim=state_dim, action_num=action_num)
-            self._v = NafVFunction(state_dim=state_dim)
+            self._a = NafAFunction(state_dim=state_dim,
+                                   action_num=action_num,
+                                   use_batch_norm=use_batch_norm)
+            self._v = NafVFunction(state_dim=state_dim,
+                                   use_batch_norm=use_batch_norm)
 
     def __call__(self, s, a):
         return self.advantage(s, a) + self.value(s)

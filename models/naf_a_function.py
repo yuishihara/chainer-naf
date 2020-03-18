@@ -6,29 +6,44 @@ from chainerrl.functions.lower_triangular_matrix import lower_triangular_matrix
 
 
 class NafLMatrix(chainer.Chain):
-    def __init__(self, state_dim, action_num, hidden_size):
+    def __init__(self, state_dim, action_num, hidden_size, *, use_batch_norm=True):
         super(NafLMatrix, self).__init__()
         L_lower_size = action_num * (action_num + 1) // 2
         L_diag = action_num
         L_rest = L_lower_size - action_num
+        self._use_batch_norm = use_batch_norm
         with self.init_scope():
+            if use_batch_norm:
+                self._L_bn0 = L.BatchNormalization(size=[state_dim], axis=0)
             self._linear_L1 = L.Linear(
-                in_size=state_dim, out_size=hidden_size, nobias=True)
-            self._L_bn1 = L.BatchNormalization(size=[hidden_size], axis=0)
+                in_size=state_dim, out_size=hidden_size, nobias=use_batch_norm)
+            if use_batch_norm:
+                self._L_bn1 = L.BatchNormalization(size=[hidden_size], axis=0)
             self._linear_L2 = L.Linear(
-                in_size=hidden_size, out_size=hidden_size, nobias=True)
-            self._L_bn2 = L.BatchNormalization(size=[hidden_size], axis=0)
+                in_size=hidden_size, out_size=hidden_size, nobias=use_batch_norm)
+            if use_batch_norm:
+                self._L_bn2 = L.BatchNormalization(size=[hidden_size], axis=0)
             self._linear_L3_diag = L.Linear(
                 in_size=hidden_size, out_size=L_diag)
             self._linear_L3_rest = L.Linear(
                 in_size=hidden_size, out_size=L_rest)
 
     def __call__(self, s):
-        h = self._linear_L1(s)
-        h = self._L_bn1(h)
+        if self._use_batch_norm:
+            h = self._L_bn0(s)
+        else:
+            h = s
+        h = self._linear_L1(h)
+        if self._use_batch_norm:
+            h = self._L_bn1(h)
+        else:
+            pass
         h = F.relu(h)
         h = self._linear_L2(h)
-        h = self._L_bn2(h)
+        if self._use_batch_norm:
+            h = self._L_bn2(h)
+        else:
+            pass
         h = F.relu(h)
         diag = F.exp(self._linear_L3_diag(h))
         rest = self._linear_L3_rest(h)
@@ -36,38 +51,55 @@ class NafLMatrix(chainer.Chain):
 
 
 class NafMu(chainer.Chain):
-    def __init__(self, state_dim, action_num, hidden_size):
+    def __init__(self, state_dim, action_num, hidden_size, use_batch_norm=True):
         super(NafMu, self).__init__()
+        self._use_batch_norm = use_batch_norm
         with self.init_scope():
+            if use_batch_norm:
+                self._mu_bn0 = L.BatchNormalization(size=[state_dim], axis=0)
             self._linear_mu1 = L.Linear(
-                in_size=state_dim, out_size=hidden_size, nobias=True)
-            self._mu_bn1 = L.BatchNormalization(size=[hidden_size], axis=0)
+                in_size=state_dim, out_size=hidden_size, nobias=use_batch_norm)
+            if use_batch_norm:
+                self._mu_bn1 = L.BatchNormalization(size=[hidden_size], axis=0)
             self._linear_mu2 = L.Linear(
-                in_size=hidden_size, out_size=hidden_size, nobias=True)
-            self._mu_bn2 = L.BatchNormalization(size=[hidden_size], axis=0)
+                in_size=hidden_size, out_size=hidden_size, nobias=use_batch_norm)
+            if use_batch_norm:
+                self._mu_bn2 = L.BatchNormalization(size=[hidden_size], axis=0)
             self._linear_mu3 = L.Linear(
                 in_size=hidden_size, out_size=action_num)
 
     def __call__(self, s):
-        h = self._linear_mu1(s)
-        h = self._mu_bn1(h)
+        if self._use_batch_norm:
+            h = self._mu_bn0(s)
+        else:
+            h = s
+        h = self._linear_mu1(h)
+        if self._use_batch_norm:
+            h = self._mu_bn1(h)
+        else:
+            pass
         h = F.relu(h)
         h = self._linear_mu2(h)
-        h = self._mu_bn2(h)
+        if self._use_batch_norm:
+            h = self._mu_bn2(h)
+        else:
+            pass
         h = F.relu(h)
         return self._linear_mu3(h)
 
 
 class NafAFunction(chainer.Chain):
-    def __init__(self, state_dim, action_num, *, hidden_size=200):
+    def __init__(self, state_dim, action_num, *, hidden_size=200, use_batch_norm=True):
         super(NafAFunction, self).__init__()
         with self.init_scope():
             self._L = NafLMatrix(state_dim=state_dim,
                                  action_num=action_num,
-                                 hidden_size=hidden_size)
+                                 hidden_size=hidden_size,
+                                 use_batch_norm=use_batch_norm)
             self._mu = NafMu(state_dim=state_dim,
                              action_num=action_num,
-                             hidden_size=hidden_size)
+                             hidden_size=hidden_size,
+                             use_batch_norm=use_batch_norm)
 
     def __call__(self, s, a):
         L_matrix = self._L(s)

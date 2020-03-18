@@ -25,7 +25,8 @@ class NAF(object):
                  batch_size=100,
                  device=-1,
                  shared_model=False,
-                 clip_grads=False):
+                 clip_grads=False,
+                 use_batch_norm=True):
         super(NAF, self).__init__()
         self._q_optimizer = optimizers.Adam(alpha=lr)
 
@@ -33,13 +34,14 @@ class NAF(object):
 
         if shared_model:
             self._q = NafSharedQFunction(
-                state_dim=state_dim, action_num=action_num)
+                state_dim=state_dim, action_num=action_num, use_batch_norm=use_batch_norm)
             self._target_q = NafSharedQFunction(
-                state_dim=state_dim, action_num=action_num)
+                state_dim=state_dim, action_num=action_num, use_batch_norm=use_batch_norm)
         else:
-            self._q = NafQFunction(state_dim=state_dim, action_num=action_num)
+            self._q = NafQFunction(
+                state_dim=state_dim, action_num=action_num, use_batch_norm=use_batch_norm)
             self._target_q = NafQFunction(
-                state_dim=state_dim, action_num=action_num)
+                state_dim=state_dim, action_num=action_num, use_batch_norm=use_batch_norm)
 
         if not device < 0:
             self._q.to_gpu()

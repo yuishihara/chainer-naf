@@ -117,7 +117,8 @@ def start_test_run(args):
               lr=args.learning_rate,
               batch_size=args.batch_size,
               device=args.gpu,
-              shared_model=args.parameter_shared_model)
+              shared_model=args.parameter_shared_model,
+              use_batch_norm=args.use_batch_norm)
     load_params(naf, args)
 
     chainer.config.train = False
@@ -164,6 +165,7 @@ def main():
     parser.add_argument('--max-buffer-size', type=int, default=None)
     parser.add_argument('--parameter-shared-model', action='store_true')
     parser.add_argument('--clip-grads', action='store_true')
+    parser.add_argument('--use-batch-norm', action='store_true')
 
     args = parser.parse_args()
 
