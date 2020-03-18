@@ -100,7 +100,8 @@ def start_training(args):
               lr=args.learning_rate,
               batch_size=args.batch_size,
               device=args.gpu,
-              shared_model=args.parameter_shared_model)
+              shared_model=args.parameter_shared_model,
+              clip_grads=args.clip_grads)
     load_params(naf, args)
 
     run_training_loop(env, naf, args)
@@ -162,6 +163,7 @@ def main():
     parser.add_argument('--iterations', type=int, default=5)
     parser.add_argument('--max-buffer-size', type=int, default=None)
     parser.add_argument('--parameter-shared-model', action='store_true')
+    parser.add_argument('--clip-grads', action='store_true')
 
     args = parser.parse_args()
 
