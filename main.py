@@ -95,17 +95,22 @@ def run_training_loop(env, naf, args):
             s_current = env.reset()
 
 
+def prepare_naf(args):
+    return NAF(state_dim=env.observation_space.shape[0],
+               action_num=env.action_space.shape[0],
+               lr=args.learning_rate,
+               batch_size=args.batch_size,
+               device=args.gpu,
+               shared_model=args.parameter_shared_model,
+               clip_grads=args.clip_grads,
+               use_batch_norm=args.use_batch_norm,
+               double_q=args.double_q)
+
+
 def start_training(args):
     env = build_env(args)
 
-    naf = NAF(state_dim=env.observation_space.shape[0],
-              action_num=env.action_space.shape[0],
-              lr=args.learning_rate,
-              batch_size=args.batch_size,
-              device=args.gpu,
-              shared_model=args.parameter_shared_model,
-              clip_grads=args.clip_grads,
-              use_batch_norm=args.use_batch_norm)
+    naf = prepare_naf(args)
     load_params(naf, args)
 
     run_training_loop(env, naf, args)
@@ -116,14 +121,7 @@ def start_training(args):
 def start_test_run(args):
     env = build_env(args)
 
-    naf = NAF(state_dim=env.observation_space.shape[0],
-              action_num=env.action_space.shape[0],
-              lr=args.learning_rate,
-              batch_size=args.batch_size,
-              device=args.gpu,
-              shared_model=args.parameter_shared_model,
-              clip_grads=args.clip_grads,
-              use_batch_norm=args.use_batch_norm)
+    naf = prepare_naf(args)
     load_params(naf, args)
 
     chainer.config.train = False
@@ -170,6 +168,7 @@ def main():
     parser.add_argument('--parameter-shared-model', action='store_true')
     parser.add_argument('--clip-grads', action='store_true')
     parser.add_argument('--use-batch-norm', action='store_true')
+    parser.add_argument('--double-q', action='store_true')
 
     args = parser.parse_args()
 

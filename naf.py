@@ -26,11 +26,13 @@ class NAF(object):
                  device=-1,
                  shared_model=False,
                  clip_grads=False,
-                 use_batch_norm=True):
+                 use_batch_norm=True,
+                 double_q=False):
         super(NAF, self).__init__()
         self._q_optimizer = optimizers.Adam(alpha=lr)
 
         self._batch_size = batch_size
+        self._double_q = double_q
 
         if shared_model:
             self._q = NafSharedQFunction(
@@ -128,9 +130,12 @@ class NAF(object):
         print('min_v: {}, max_v: {}'.format(min_vs, max_vs))
         return rewards
 
-    def target_q_value(self, state):
+    def target_q_value(self, state, action):
         chainer.config.train = False
-        q_value = self._target_q.value(state)
+        if self._double_q:
+            q_value = self._target_q(state, action)
+        else:
+            q_value = self._target_q.value(state)
         chainer.config.train = True
         return q_value
 
@@ -146,7 +151,7 @@ class NAF(object):
             r = F.reshape(r, shape=(*r.shape, 1))
             non_terminal = F.reshape(
                 non_terminal, shape=(*non_terminal.shape, 1))
-            value = self.target_q_value(s_next) * non_terminal
+            value = self.target_q_value(s_next, action) * non_terminal
             y = value * gamma + r
             y.unchain()
 
