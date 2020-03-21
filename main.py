@@ -95,7 +95,7 @@ def run_training_loop(env, naf, args):
             s_current = env.reset()
 
 
-def prepare_naf(args):
+def prepare_naf(env, args):
     return NAF(state_dim=env.observation_space.shape[0],
                action_num=env.action_space.shape[0],
                lr=args.learning_rate,
@@ -110,7 +110,7 @@ def prepare_naf(args):
 def start_training(args):
     env = build_env(args)
 
-    naf = prepare_naf(args)
+    naf = prepare_naf(env, args)
     load_params(naf, args)
 
     run_training_loop(env, naf, args)
