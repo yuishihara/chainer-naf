@@ -101,7 +101,8 @@ def start_training(args):
               batch_size=args.batch_size,
               device=args.gpu,
               shared_model=args.parameter_shared_model,
-              clip_grads=args.clip_grads)
+              clip_grads=args.clip_grads,
+              use_batch_norm=args.use_batch_norm)
     load_params(naf, args)
 
     run_training_loop(env, naf, args)
@@ -118,6 +119,7 @@ def start_test_run(args):
               batch_size=args.batch_size,
               device=args.gpu,
               shared_model=args.parameter_shared_model,
+              clip_grads=args.clip_grads,
               use_batch_norm=args.use_batch_norm)
     load_params(naf, args)
 
