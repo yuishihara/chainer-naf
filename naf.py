@@ -86,6 +86,7 @@ class NAF(object):
         if save_video:
             from OpenGL import GL
             env = gym.wrappers.Monitor(env, directory='video',
+                                       video_callable=(lambda ep: ep),
                                        write_upon_reset=True, force=True, resume=True, mode='evaluation')
             render = False
 

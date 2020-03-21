@@ -133,3 +133,4 @@ dmypy.json
 
 # results
 results/**
+video/**

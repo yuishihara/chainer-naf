@@ -1,0 +1,1 @@
+main.py --env=Ant-v2 --gpu=0 --tau=0.005 --max-buffer-size=100000 --parameter-shared-model --clip-grads --use-batch-norm
