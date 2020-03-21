@@ -164,7 +164,6 @@ def main():
     parser.add_argument('--gamma', type=float, default=0.99)
     parser.add_argument('--tau', type=float, default=0.001)
     parser.add_argument('--batch-size', type=int, default=100)
-    parser.add_argument('--start-timesteps', type=int, default=1000)
     parser.add_argument('--evaluation-interval', type=float, default=5000)
     parser.add_argument('--iterations', type=int, default=5)
     parser.add_argument('--max-buffer-size', type=int, default=None)
