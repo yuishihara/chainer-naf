@@ -22,7 +22,10 @@ def load_params(naf, args):
     print('loading model params')
 
     naf._q.to_cpu()
-    serializers.load_model(args.q_params, naf._q)
+    if args.q_params:
+        if not files.file_exists(args.q_params):
+            raise ValueError('Not trained parameter specified!!')
+        serializers.load_model(args.q_params, naf._q)
     if not args.gpu < 0:
         naf._q.to_gpu()
 
@@ -153,7 +156,7 @@ def main():
     parser.add_argument('--save-video', action='store_true')
 
     # params
-    parser.add_argument('--q-params', type=str, default="")
+    parser.add_argument('--q-params', type=str, default=None)
 
     # Training parameters
     parser.add_argument('--total-timesteps', type=float, default=1000000)
