@@ -1,0 +1,1 @@
+{"outdir": "results", "env": "Ant-v2", "gpu": 0, "test_run": false, "save_video": false, "q_params": "", "total_timesteps": 1000000, "learning_rate": 1e-05, "gamma": 0.99, "tau": 0.005, "batch_size": 100, "start_timesteps": 1000, "evaluation_interval": 5000, "iterations": 5, "max_buffer_size": 100000, "parameter_shared_model": false, "clip_grads": true, "use_batch_norm": false}

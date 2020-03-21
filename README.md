@@ -70,3 +70,10 @@ In my environment learning rate between 1e-4 to 1e-5 was effective for training.
 |:---:|:---:|
 | ![ant-v2-result](./trained_results/ant-v2/independent_parameter_model/lr-1e-4/result.gif) |![ant-v2-graph](./trained_results/ant-v2/independent_parameter_model/lr-1e-4/result.png)|
 
+#### Independent parameter model (learning rate 1e-5)
+
+(Best score: mean: 1217, median: 1241)
+
+|result|score|
+|:---:|:---:|
+| ![ant-v2-result](./trained_results/ant-v2/independent_parameter_model/lr-1e-5/result.gif) |![ant-v2-graph](./trained_results/ant-v2/independent_parameter_model/lr-1e-5/result.png)|
