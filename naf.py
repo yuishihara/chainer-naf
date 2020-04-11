@@ -130,12 +130,13 @@ class NAF(object):
         print('min_v: {}, max_v: {}'.format(min_vs, max_vs))
         return rewards
 
-    def target_q_value(self, state, action):
+    def target_q_value(self, next_state):
         chainer.config.train = False
         if self._double_q:
-            q_value = self._target_q(state, action)
+            next_action = self._q.pi(next_state)
+            q_value = self._target_q(next_state, next_action)
         else:
-            q_value = self._target_q.value(state)
+            q_value = self._target_q.value(next_state)
         chainer.config.train = True
         return q_value
 
@@ -151,7 +152,7 @@ class NAF(object):
             r = F.reshape(r, shape=(*r.shape, 1))
             non_terminal = F.reshape(
                 non_terminal, shape=(*non_terminal.shape, 1))
-            value = self.target_q_value(s_next, action) * non_terminal
+            value = self.target_q_value(s_next) * non_terminal
             y = value * gamma + r
             y.unchain()
 
